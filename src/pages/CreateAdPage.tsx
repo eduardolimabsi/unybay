@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Bold, Italic, Underline, Type, AlignLeft, AlignCenter, AlignRight, List } from "lucide-react";
+import { toast } from "react-toastify";
 
 export function CreateAdPage() {
   const navigate = useNavigate();
@@ -46,6 +47,7 @@ export function CreateAdPage() {
     e.preventDefault();
     if (validate()) {
       console.log("Salvar produto", formData);
+      toast.success("Anúncio criado com sucesso!");
       navigate("/meus-anuncios");
     }
   };

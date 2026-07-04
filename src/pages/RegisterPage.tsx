@@ -1,7 +1,9 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 export function RegisterPage() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
@@ -48,6 +50,8 @@ export function RegisterPage() {
     e.preventDefault();
     if (validate()) {
       console.log("Simulação de cadastro. Dados:", formData);
+      toast.success("Conta criada com sucesso! Faça login.");
+      navigate("/login");
     }
   };
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 export function ContactPage() {
   const [formData, setFormData] = useState({
@@ -17,7 +18,7 @@ export function ContactPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Mensagem enviada", formData);
-    alert("Mensagem enviada com sucesso!");
+    toast.success("Mensagem enviada com sucesso!");
     setFormData({ nome: "", email: "", mensagem: "" });
   };
 

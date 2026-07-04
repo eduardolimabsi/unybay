@@ -2,12 +2,12 @@ import { Link } from "react-router-dom";
 import { Pencil, Trash2 } from "lucide-react";
 
 interface AdminProductCardProps {
-  id: number;
+  id: string;
   title: string;
   price: number;
   imageUrl: string;
   seller: string;
-  onDeleteClick?: (id: number) => void;
+  onDeleteClick?: (id: string) => void;
 }
 
 export function AdminProductCard({ id, title, price, imageUrl, seller, onDeleteClick }: AdminProductCardProps) {

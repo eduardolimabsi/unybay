@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
@@ -10,6 +11,7 @@ export function LoginPage() {
     e.preventDefault();
     // Apenas comportamento visual. Prevenimos o carregamento de tela real
     console.log("Simulação de login. Dados:", { email, password });
+    toast.success("Login realizado com sucesso! Bem-vindo.");
     navigate("/dashboard");
   };
 

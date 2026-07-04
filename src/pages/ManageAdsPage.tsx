@@ -1,24 +1,45 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import { AdminProductCard } from "../components/AdminProductCard";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+
+interface ApiProduct {
+  _id: string;
+  name: string;
+  price: number;
+  url1: string;
+  manufacturer: string;
+  createdAt: string;
+}
 
 export function ManageAdsPage() {
-  const [ads, setAds] = useState(
-    Array(4).fill(null).map((_, i) => ({
-      id: i + 1,
-      title: "Echo Dot (8ª Geração)",
-      price: 700.99,
-      imageUrl: "https://images7.kabum.com.br/produtos/fotos/sync_mirakl/538147/xlarge/Caixa-De-Som-Amazon-Echo-Dot-5-Gera-o-Alexa-Bluetooth-Preto_1783019923.jpg",
-      seller: "Amazon"
-    }))
-  );
+  const [ads, setAds] = useState<ApiProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
-  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+  useEffect(() => {
+    axios.get("https://api-projeto-integrador.vercel.app/products")
+      .then((response) => {
+        const sortedProducts = response.data.sort((a: ApiProduct, b: ApiProduct) => {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+        setAds(sortedProducts);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Erro ao carregar os anúncios", err);
+        setError(true);
+        setLoading(false);
+      });
+  }, []);
 
   const handleDeleteConfirm = () => {
     if (itemToDelete !== null) {
-      setAds(ads.filter(ad => ad.id !== itemToDelete));
+      setAds(ads.filter(ad => ad._id !== itemToDelete));
       setItemToDelete(null);
+      toast.success("Produto excluído com sucesso!");
     }
   };
 
@@ -33,23 +54,31 @@ export function ManageAdsPage() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
-        {ads.map((product) => (
-          <AdminProductCard 
-            key={product.id}
-            id={product.id}
-            title={product.title}
-            price={product.price}
-            imageUrl={product.imageUrl}
-            seller={product.seller}
-            onDeleteClick={(id) => setItemToDelete(id)}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <div className="text-center py-10 text-gray-500">Carregando seus anúncios...</div>
+      ) : error ? (
+        <div className="text-center py-10 text-red-500">Erro ao carregar anúncios.</div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
+            {ads.map((product) => (
+              <AdminProductCard 
+                key={product._id}
+                id={product._id}
+                title={product.name}
+                price={product.price}
+                imageUrl={product.url1}
+                seller={product.manufacturer}
+                onDeleteClick={(id) => setItemToDelete(id)}
+              />
+            ))}
+          </div>
 
-      <div className="text-right text-sm text-gray-500 font-medium">
-        {ads.length} itens
-      </div>
+          <div className="text-right text-sm text-gray-500 font-medium">
+            {ads.length} itens
+          </div>
+        </>
+      )}
 
       {/* Modal de Exclusão */}
       {itemToDelete !== null && (
