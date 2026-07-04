@@ -1,4 +1,5 @@
 import { Globe, Mail } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function Footer() {
   return (
@@ -13,13 +14,18 @@ export function Footer() {
           <p className="max-w-md">
             Unybay ® {new Date().getFullYear()}. Todos os direitos reservados.
           </p>
-          <div className="flex items-center space-x-6">
-            <a href="#" className="hover:text-white hover:scale-110 transition-all p-2 bg-white/10 rounded-full">
-              <Globe className="h-5 w-5" />
-            </a>
-            <a href="#" className="hover:text-white hover:scale-110 transition-all p-2 bg-white/10 rounded-full">
-              <Mail className="h-5 w-5" />
-            </a>
+          <div className="flex flex-col items-center space-y-4">
+            <Link to="/contato" className="hover:text-white transition-colors underline underline-offset-4 font-medium text-white/90">
+              Fale Conosco
+            </Link>
+            <div className="flex items-center space-x-6">
+              <a href="#" className="hover:text-white hover:scale-110 transition-all p-2 bg-white/10 rounded-full">
+                <Globe className="h-5 w-5" />
+              </a>
+              <a href="#" className="hover:text-white hover:scale-110 transition-all p-2 bg-white/10 rounded-full">
+                <Mail className="h-5 w-5" />
+              </a>
+            </div>
           </div>
         </div>
       </div>
