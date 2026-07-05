@@ -25,7 +25,7 @@ export function ProductDetailsPage() {
   // Estados do Frete
   const [cepInput, setCepInput] = useState("");
   const [calculatingFreight, setCalculatingFreight] = useState(false);
-  const [freightResult, setFreightResult] = useState<{ price: number; days: number } | null>(null);
+  const [freightResult, setFreightResult] = useState<{ price: number; days: number; destination: string } | null>(null);
 
   useEffect(() => {
     axios.get("https://api-projeto-integrador.vercel.app/products")
@@ -75,8 +75,8 @@ export function ProductDetailsPage() {
     setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? images.length - 1 : prevIndex - 1));
   };
 
-  // Simulação de cálculo de frete simples
-  const handleCalculateFreight = () => {
+  // Cálculo de frete integrando API do ViaCEP e regras de negócios regionais
+  const handleCalculateFreight = async () => {
     const rawCep = cepInput.replace(/\D/g, "");
     if (rawCep.length !== 8) {
       toast.error("Digite um CEP válido (8 dígitos).");
@@ -86,15 +86,54 @@ export function ProductDetailsPage() {
     setCalculatingFreight(true);
     setFreightResult(null);
 
-    // Mockup: Simula delay de requisição e sorteia um frete aleatório
-    setTimeout(() => {
+    try {
+      const response = await axios.get(`https://viacep.com.br/ws/${rawCep}/json/`);
+      
+      if (response.data.erro) {
+        toast.error("CEP não encontrado.");
+        setCalculatingFreight(false);
+        return;
+      }
+
+      const uf = response.data.uf;
+      const cidade = response.data.localidade;
+      
+      // Tabela de preços saindo do DF (70711-040)
+      let price = 0;
+      let days = 0;
+
+      if (uf === 'DF') {
+        price = 15.00;
+        days = 2;
+      } else if (['GO', 'MT', 'MS'].includes(uf)) {
+        price = 28.50;
+        days = 5;
+      } else if (['SP', 'RJ', 'MG', 'ES'].includes(uf)) {
+        price = 35.90;
+        days = 7;
+      } else if (['PR', 'SC', 'RS'].includes(uf)) {
+        price = 48.00;
+        days = 9;
+      } else if (['BA', 'PE', 'CE', 'RN', 'PB', 'AL', 'SE', 'PI', 'MA'].includes(uf)) {
+        price = 65.00;
+        days = 12;
+      } else {
+        // Norte
+        price = 85.00;
+        days = 15;
+      }
+
       setFreightResult({
-        price: Math.floor(Math.random() * 40) + 10, // Entre R$10 e R$50
-        days: Math.floor(Math.random() * 8) + 3     // Entre 3 e 10 dias
+        price,
+        days,
+        destination: `${cidade}/${uf}`
       });
+      toast.success("Frete calculado com sucesso!");
+    } catch (error) {
+      toast.error("Erro ao consultar a API. Tente novamente.");
+    } finally {
       setCalculatingFreight(false);
-      toast.success("Frete calculado!");
-    }, 1200);
+    }
   };
 
   return (
@@ -188,12 +227,14 @@ export function ProductDetailsPage() {
 
             {/* Resultado do Frete */}
             {freightResult && !calculatingFreight && (
-              <div className="mt-4 p-3 bg-green-50 border border-green-100 rounded-lg text-sm">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-green-800 font-semibold">Entrega Padrão</span>
-                  <span className="text-green-800 font-bold">R$ {freightResult.price.toFixed(2).replace('.', ',')}</span>
+              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg text-sm shadow-sm relative overflow-hidden">
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-green-500"></div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-green-800 font-semibold">Envio Correios (PAC)</span>
+                  <span className="text-green-800 font-bold text-lg">R$ {freightResult.price.toFixed(2).replace('.', ',')}</span>
                 </div>
-                <p className="text-green-700 text-xs">Receba em até {freightResult.days} dias úteis</p>
+                <p className="text-green-700 text-xs mb-1">Destino: <span className="font-semibold">{freightResult.destination}</span></p>
+                <p className="text-green-700 text-xs">Receba em até <span className="font-bold">{freightResult.days} dias úteis</span></p>
               </div>
             )}
           </div>
